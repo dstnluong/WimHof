@@ -10,19 +10,31 @@ public class breathing : MonoBehaviour
     private string exhaleText;
 
     private string alternateExhaleText;
-    
+
+    private Audio postBreathing1;
+    private Audio postBreathing2;
+    private Audio postBreathing3;
     private bool breathingUnfinished;
     public Text display;
 
+    public Light topLight;
+    public Light bottomLight;
+    private int initialLightIntensity;
     enum state { OPEN, CLOSE };
     // Start is called before the first frame update
     void Start()
     {
+        //Restrict movement. 
+
+
         instantiateText();
         //Display introText;
         triggerActive = false;
         breathingUnfinished = true;
         //Wait for trigger to activate
+        while (!triggerActive) {
+            triggerActive = 
+        }
         if(triggerActive)
         {
             for (int i = 1; i <= 3; i++)
@@ -35,16 +47,27 @@ public class breathing : MonoBehaviour
                 powerBreathing(i);
                 //Final thing
                 postBreathing();
-                
+
             }
             eyes(OPEN);
-        }   
+        }
+        //END OBSTACLE (switch scenes)
 
     }
-    void powerBreathing(int cycle) { 
+
+    void setText(string str) {
+        text = GetComponent<Text>();
+        text = str;
+    }
+
+    void instantiateText(){
+        text = GetComponent<Text>();
+        string text = “Please take a seat and click trigger when seated”;
+    }
+    void powerBreathing(int cycle) {
 
             bool isFirstCycle = cycle == 1;
-           
+
             int rounds = 30;
             //Loop
             for (int i = 1; i <= rounds; i++)
@@ -62,49 +85,70 @@ public class breathing : MonoBehaviour
                 }
             }
             //remove text
-            display = "";
-        
+            setText("");
+
     }
 
     IEnumerator postBreathing()
     {
-        display = "Hold your breath until you rly need to breath. You should start feeling breath tremors";
-        Audio.play;
+        setText("Hold your breath until you rly need to breath. You should start feeling breath tremors");
+        postBreathing1.play();
 
-        display = "Breath in fully";
-        Audio.play;
+        setText("Breath in fully");
+        postBreathing2.play();
 
-        display = "Hold your breath for 15 seconds";
-        Audio.play;
+        setText("Hold your breath for 15 seconds");
+        postBreathing3.play();
 
     }
 
-    IEnumerator breathe(string text, Audio audio, int time, bool displayText)
+    IEnumerator breathe(string text, Audio audio, int time, bool display)
     {
         //Change text if displayText
-        if(displayText)
+        if(display)
         {
-            display = text;
+            displayText(text)
         }
-        //Play inhale Audio
-        Audio.play;
-        //Wait for 2 seconds
+        //Play Audio
+        Audio.play();
+        //Wait for time
         yield return new WaitforSeconds(time);
-        
+
     }
 
     void eyes(state state)
     {
-        double speed = 5;
-        if (state == OPEN)
+        int smoothValue = 3f;
+        if (state == CLOSE)
         {
-            speed *= -1;
-        }
-        //Create box
+            while (topLight.intensity >= 0 && bottomLight.intensity >= 0) 
+            {
+                if(topLight.intensity >= 0)
+                {
+                    topLight.intensity -= Time.delaTime*smoothValue;
+                }
+                if(bottomLight.intensity >= 0)
+                {
 
-        //Move box
+                    bottomLight.intensity -= Time.delaTime*smoothValue;
+                }
+            }
+        } 
+        if (state == CLOSE) {
+            while (topLight.intensity >= 0 && bottomLight.intensity >= 0) 
+            {
+                if(topLight.intensity >= 0) {
+                    topLight.intensity -= Time.delaTime*smoothValue;
+                }
+                if(bottomLight.intensity >= 0){
+                    bottomLight.intensity -= Time.delaTime*smoothValue;
+                }
+            }
+        }
+
 
     }
+
     void instantiateText()
     {
         introText = "Take a seat and trigger when ready";
