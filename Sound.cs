@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace WimHof
@@ -35,7 +35,7 @@ namespace WimHof
             clips[7] = finishAudio;
         }
 
-        public void playSound(int choice)
+        public void PlaySound(int choice)
         {
             source.Stop();
             source.clip = clips[choice];
