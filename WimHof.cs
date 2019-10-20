@@ -1,12 +1,13 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 namespace WimHof
 {
     public class WimHof : MonoBehaviour
     {
         /* Canvas Text */
-        Text display;
+        private Text display;
         /* Text to display to user */
         private bool triggerActive;
         private string initialText;
@@ -39,15 +40,15 @@ namespace WimHof
         void Start()
         {
             /* Instantiate everything */
-            display = GetComponent<Text>();
+            display = GetComponent<Canvas>().GetComponent<Text>();
             sound = GetComponentInChildren<Sound>();
             maxTime = 10f;
             close = false;
             open = false;
-            instantiateText();
+            InstantiateText();
 
             // Display initial text to users;
-            setText(initialText);
+            SetText(initialText);
             breathingUnfinished = true;
         }
         /*
@@ -55,16 +56,16 @@ namespace WimHof
          * cycles - how many times to repeat entire process
          * rounds - how many times to inhale and exhale
          */
-        IEnumerator beginWinHof(int cycles, int rounds)
+        IEnumerator BeginWinHof(int cycles, int rounds)
         {
-            sound.playSound(0);
+            sound.PlaySound(0);
             for (int cycle = 1; cycles <= 3; cycle++)
             {
                 // Close eyes after the first cycle
                 if (cycle == 2)
                 {
-                    setText("Now slowly close your eyes.");
-                    eyes(true);
+                    SetText("Now slowly close your eyes.");
+                    ActivateEyes(true);
                 }
                 for (int round = 1; round <= rounds; round++)
                 {
@@ -72,12 +73,12 @@ namespace WimHof
 
                     // Inhale
                     yield return new WaitForSeconds(5);
-                    inhale(isFirstCycle);
+                    Inhale(isFirstCycle);
 
                     // Exhale
                     yield return new WaitForSeconds(5);
                     bool isNotLastCycle = round != rounds;
-                    exhale(isFirstCycle, isNotLastCycle);
+                    Exhale(isFirstCycle, isNotLastCycle);
                 }
 
 
@@ -85,34 +86,34 @@ namespace WimHof
                 for (int j = 1; j <= 3; j++)
                 {
                     yield return new WaitForSeconds(10);
-                    setText("Hold your breath until you really need to breathe. You should start feeling breath tremors.");
-                    sound.playSound(4);
+                    SetText("Hold your breath until you really need to breathe. You should start feeling breath tremors.");
+                    sound.PlaySound(4);
 
                     yield return new WaitForSeconds(5);
-                    setText("Breathe in fully.");
-                    sound.playSound(5);
+                    SetText("Breathe in fully.");
+                    sound.PlaySound(5);
 
                     yield return new WaitForSeconds(15);
-                    setText("Hold your breath for 15 seconds.");
-                    sound.playSound(6);
+                    SetText("Hold your breath for 15 seconds.");
+                    sound.PlaySound(6);
                 }
             }
             // All done
-            sound.playSound(7);
-            setText(finishText);
+            sound.PlaySound(7);
+            SetText(finishText);
             // Open eyes again
-            eyes(false);
+            ActivateEyes(false);
 
         }
         /* Returns when to start the obstable */
-        bool activateTrigger()
+        bool ActivateTrigger()
         {
             return true;
         }
 
         void Update()
         {
-            triggerActive = activateTrigger();
+            triggerActive = ActivateTrigger();
 
             /* Dim lights */
             if (close && topLight && bottomLight)
@@ -131,14 +132,15 @@ namespace WimHof
             if (triggerActive && breathingUnfinished)
             {
                 breathingUnfinished = false;
-                StartCoroutine(beginWinHof(3, 30));
+                IEnumerator wimhof = BeginWinHof(3, 30);
+                StartCoroutine(wimhof);
             }
         }
 
-        /* Set Canvas to display text 
+        /* Set Canvas to display text
          * str - text to disaply on canvas
          */
-        void setText(string str)
+        void SetText(string str)
         {
             display.text = str;
             Debug.Log(display);
@@ -149,7 +151,7 @@ namespace WimHof
          * display - should text be displayed or not
          * isMainExhale - alternate text and audio should be played on last breath
          */
-        void exhale(bool display, bool isMainExhale)
+        void Exhale(bool isFirstCycle, bool isMainExhale)
         {
             string text;
             int clip;
@@ -162,30 +164,30 @@ namespace WimHof
                 clip = 3;
             }
 
-            if (display) {
-                setText(clip);
+            if (isFirstCycle) {
+                SetText(text);
             }
-            sound.playSound(sound);
+            sound.PlaySound(clip);
         }
 
         /*
          * Initiate inhale sequence
          * display - should text be displayed or not
          */
-        void inhale(bool display)
+        void Inhale(bool isFirstCycle)
         {
-            if (display)
+            if (isFirstCycle)
             {
-                setText(inhaleText);
+                SetText(inhaleText);
             }
-            sound.playSound(1);
+            sound.PlaySound(1);
         }
 
         /*
          * Close or open eyes.
          * eyes - True if eyes should close, False if eyes should open
          */
-        void eyes(bool eyesState)
+        void ActivateEyes(bool eyesState)
         {
             if (eyesState)
             {
@@ -199,16 +201,16 @@ namespace WimHof
             mStartTime = Time.time;
             mEndTime = mStartTime + maxTime;
 
-            // Only one should be True at a time. 
+            // Only one should be True at a time.
             open = !eyesState;
             close = eyesState;
 
         }
 
         /* Instantiate text lines */
-        void instantiateText()
+        void InstantiateText()
         {
-            display = "";
+            display.text = "";
             initialText = "Please take a seat and click trigger when seated";
             inhaleText = "Inhale deeply.";
             exhaleText = "Exhale.";
